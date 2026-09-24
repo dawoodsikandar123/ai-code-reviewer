@@ -16,44 +16,53 @@ app.post("/review", async (req, res) => {
   }
 
   try {
-    const response = await fetch("https://api.us-east.bob.ibm.com/inference/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Apikey ${process.env.BOB_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "premium",
-        messages: [
-          {
-            role: "developer",
-            content: "You are a code reviewer. Return ONLY valid JSON in this exact shape: { \"issues\": [ { \"line\": number, \"severity\": \"bug\"|\"security\"|\"performance\"|\"quality\", \"message\": string, \"suggestion\": string } ] }. No extra text."
-          },
-          {
-            role: "user",
-            content: `Language: ${language}\n\nCode:\n${code}`
-          }
-        ]
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `You are a code reviewer. Return ONLY valid JSON, no markdown, no extra text, in this exact shape:
+{ "issues": [ { "line": number, "severity": "bug"|"security"|"performance"|"quality", "message": string, "suggestion": string } ] }
 
-    const data = await response.json();
+Language: ${language}
+
+Code:
+${code}`
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
+
+    const rawText = await response.text();
+    console.log("STATUS:", response.status);
+    console.log("BODY:", rawText.slice(0, 500));
 
     if (!response.ok) {
-      console.error("Bob API error:", data);
-      return res.status(500).json({ error: "AI request failed", details: data });
+      return res.status(500).json({
+        error: "AI request failed",
+        status: response.status,
+        details: rawText.slice(0, 300)
+      });
     }
 
-    const aiText = data.choices[0].message.content;
-    const parsed = JSON.parse(aiText);
+    const data = JSON.parse(rawText);
+    let aiText = data.candidates[0].content.parts[0].text;
 
+    aiText = aiText.replace(/```json/g, "").replace(/```/g, "").trim();
+
+    const parsed = JSON.parse(aiText);
     res.json(parsed);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Something went wrong", details: err.message });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+})
