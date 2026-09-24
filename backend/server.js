@@ -4,13 +4,9 @@ const path = require("path");
 const app = express();
 const PORT = 3000;
 
-// JSON requests read karne ke liye
 app.use(express.json());
-
-// Frontend ki files serve karne ke liye
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// Code review endpoint
 app.post("/review", (req, res) => {
   const { code, language } = req.body;
 
@@ -27,7 +23,6 @@ app.post("/review", (req, res) => {
   });
 });
 
-// Server start
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
