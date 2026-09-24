@@ -1,34 +1,29 @@
 const express = require("express");
+const path = require("path");
 
 const app = express();
 const PORT = 3000;
 
-// JSON request body ko read karne ke liye
+// JSON requests read karne ke liye
 app.use(express.json());
 
-// Basic test route
-app.get("/", (req, res) => {
-  res.json({
-    message: "AI Code Reviewer backend is running"
-  });
-});
+// Frontend ki files serve karne ke liye
+app.use(express.static(path.join(__dirname, "../frontend")));
 
-// Code review ka endpoint
+// Code review endpoint
 app.post("/review", (req, res) => {
   const { code, language } = req.body;
 
-  // Basic validation
   if (!code || !language) {
     return res.status(400).json({
       error: "Code and language are required"
     });
   }
 
-  // Abhi sirf test ke liye received data return kar rahe hain
   res.json({
     message: "Code received successfully",
-    language: language,
-    code: code
+    language,
+    code
   });
 });
 

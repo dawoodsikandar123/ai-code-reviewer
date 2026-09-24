@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Code Reviewer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo">
+      <span class="logo-icon">&lt;/&gt;</span>
+      <span>AI Code Reviewer</span>
+    </div>
+
+    <div class="nav-status">
+      <span class="status-dot"></span>
+      Ready
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="hero">
+      <p class="eyebrow">AI-POWERED CODE ANALYSIS</p>
+      <h1>Find problems before they reach production.</h1>
+      <p class="subtitle">
+        Paste your code or upload files and get structured feedback on
+        bugs, security, performance, and code quality.
+      </p>
+    </section>
+
+    <section class="review-card">
+
+      <div class="toolbar">
+        <div class="language-box">
+          <label for="language">Language</label>
+
+          <select id="language">
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+          </select>
+        </div>
+
+        <label class="upload-btn">
+          Upload Files
+          <input type="file" id="fileInput" multiple />
+        </label>
+      </div>
+
+      <div class="editor-wrapper">
+        <div class="editor-header">
+          <span>Code</span>
+          <span id="charCount">0 characters</span>
+        </div>
+
+        <textarea
+          id="codeInput"
+          placeholder="Paste your code here..."
+          spellcheck="false"
+        ></textarea>
+      </div>
+
+      <div id="fileList" class="file-list"></div>
+
+      <button id="reviewBtn" class="review-btn">
+        Review Code
+      </button>
+
+    </section>
+
+    <section class="results-section">
+
+      <div class="results-header">
+        <div>
+          <p class="eyebrow">ANALYSIS</p>
+          <h2>Review Results</h2>
+        </div>
+
+        <span class="result-badge">No review yet</span>
+      </div>
+
+      <div class="summary-grid">
+
+        <div class="summary-card">
+          <span class="summary-number">0</span>
+          <span class="summary-label">Total Issues</span>
+        </div>
+
+        <div class="summary-card">
+          <span class="summary-number">0</span>
+          <span class="summary-label">Security</span>
+        </div>
+
+        <div class="summary-card">
+          <span class="summary-number">0</span>
+          <span class="summary-label">Performance</span>
+        </div>
+
+        <div class="summary-card">
+          <span class="summary-number">0</span>
+          <span class="summary-label">Quality</span>
+        </div>
+
+      </div>
+
+      <div class="empty-result">
+        <div class="empty-icon">&lt;/&gt;</div>
+        <h3>Your review will appear here</h3>
+        <p>
+          Submit your code to receive AI-generated issues,
+          explanations, and improvement suggestions.
+        </p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer>
+    <p>AI Code Reviewer • Hackathon Project</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
