@@ -61,9 +61,9 @@ fileInput.addEventListener("change", async () => {
 
 const severityColors = {
   bug: "#ff6b6b",
-  security: "#ff9f43",
+  security: "#e0a458",
   performance: "#62d9ff",
-  quality: "#8e8eff"
+  quality: "#a78bfa"
 };
 
 function calculateScore(counts) {
