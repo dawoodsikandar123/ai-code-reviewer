@@ -7,6 +7,10 @@ const languageSelect = document.getElementById("language");
 const resultBadge = document.querySelector(".result-badge");
 const emptyResult = document.querySelector(".empty-result");
 const summaryCards = document.querySelectorAll(".summary-card .summary-number");
+const scoreRingFill = document.querySelector(".score-ring-fill");
+const scoreNumber = document.querySelector(".score-number");
+
+const CIRCUMFERENCE = 339.292;
 
 codeInput.addEventListener("input", () => {
   charCount.textContent = `${codeInput.value.length} characters`;
@@ -62,6 +66,44 @@ const severityColors = {
   quality: "#8e8eff"
 };
 
+function calculateScore(counts) {
+  const penalty = counts.bug * 15 + counts.security * 20 + counts.performance * 10 + counts.quality * 5;
+  return Math.max(0, 100 - penalty);
+}
+
+function scoreColor(score) {
+  if (score >= 80) return "#40d47a";
+  if (score >= 50) return "#f5c542";
+  return "#ff6b6b";
+}
+
+function animateNumber(el, from, to, duration) {
+  const start = performance.now();
+  function tick(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const value = Math.round(from + (to - from) * progress);
+    el.textContent = value;
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function animateScore(score) {
+  const offset = CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
+  const color = scoreColor(score);
+
+  scoreRingFill.style.stroke = color;
+  scoreNumber.style.color = color;
+
+  scoreRingFill.style.transition = "none";
+  scoreRingFill.style.strokeDashoffset = CIRCUMFERENCE;
+  scoreRingFill.getBoundingClientRect();
+  scoreRingFill.style.transition = "stroke-dashoffset 1.4s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.6s ease";
+  scoreRingFill.style.strokeDashoffset = offset;
+
+  animateNumber(scoreNumber, 0, score, 1400);
+}
+
 function renderResults(data) {
   const issues = data.issues || [];
 
@@ -74,6 +116,8 @@ function renderResults(data) {
   summaryCards[1].textContent = counts.security;
   summaryCards[2].textContent = counts.performance;
   summaryCards[3].textContent = counts.quality;
+
+  animateScore(calculateScore(counts));
 
   if (issues.length === 0) {
     emptyResult.innerHTML = `
