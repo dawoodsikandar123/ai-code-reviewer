@@ -461,3 +461,22 @@ function tick() {
 
 tick();
 setInterval(tick, 1000);
+
+
+// ── Dark / Light theme toggle ─────────────────────────────────────────
+
+const themeToggleBtn = document.getElementById("themeToggle");
+
+function applyTheme(theme) {
+  const isLight = theme === "light";
+  document.body.classList.toggle("light", isLight);
+  themeToggleBtn.textContent = isLight ? "Dark" : "Light";
+  localStorage.setItem("theme", theme);
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  applyTheme(document.body.classList.contains("light") ? "dark" : "light");
+});
+
+// Restore saved preference; default to dark
+applyTheme(localStorage.getItem("theme") || "dark");
