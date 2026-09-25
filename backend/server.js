@@ -53,7 +53,7 @@ ${code}`;
 
   const callGemini = async () => {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -66,11 +66,8 @@ ${code}`;
               parts: [{ text: prompt }]
             }
           ],
-          generationConfig: {
-            responseMimeType: "application/json",
-            thinkingConfig: {
-              thinkingBudget: 0
-            }
+            generationConfig: {
+            responseMimeType: "application/json"
           }
         })
       }
