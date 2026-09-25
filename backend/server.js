@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const path = require("path");
+const { saveReview, getHistory, getReviewById } = require("./db");
 
 const app = express();
 const PORT = 3000;
@@ -9,6 +10,7 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../frontend")));
 
+// ── POST /review ──────────────────────────────────────────────────────
 app.post("/review", async (req, res) => {
   const { code, language } = req.body;
 
@@ -66,7 +68,7 @@ ${code}`;
               parts: [{ text: prompt }]
             }
           ],
-            generationConfig: {
+          generationConfig: {
             responseMimeType: "application/json"
           }
         })
@@ -101,7 +103,6 @@ ${code}`;
     }
 
     const data = JSON.parse(result.rawText);
-
     const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!aiText) {
@@ -111,12 +112,28 @@ ${code}`;
     }
 
     const parsed = JSON.parse(aiText);
+    const issues = parsed.issues || [];
 
-    res.json(parsed);
+    // Calculate counts and score (mirrors frontend logic)
+    const counts = { bug: 0, security: 0, performance: 0, quality: 0 };
+    for (const issue of issues) {
+      if (counts[issue.severity] !== undefined) counts[issue.severity]++;
+    }
+    const penalty =
+      counts.bug * 15 +
+      counts.security * 20 +
+      counts.performance * 10 +
+      counts.quality * 5;
+    const score = Math.max(0, 100 - penalty);
+
+    // Persist to SQLite
+    const reviewId = saveReview({ language, score, counts, issues });
+    console.log(`Review saved: id=${reviewId}, score=${score}, issues=${issues.length}`);
+
+    res.json({ ...parsed, id: reviewId, score });
 
   } catch (err) {
     console.error("Review error:", err);
-
     res.status(500).json({
       error: "Something went wrong",
       details: err.message
@@ -124,6 +141,34 @@ ${code}`;
   }
 });
 
+// ── GET /history ──────────────────────────────────────────────────────
+app.get("/history", (req, res) => {
+  try {
+    const rows = getHistory();
+    res.json(rows);
+  } catch (err) {
+    console.error("History error:", err);
+    res.status(500).json({ error: "Could not fetch history" });
+  }
+});
+
+// ── GET /history/:id ──────────────────────────────────────────────────
+app.get("/history/:id", (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) {
+    return res.status(400).json({ error: "Invalid id" });
+  }
+  try {
+    const review = getReviewById(id);
+    if (!review) return res.status(404).json({ error: "Review not found" });
+    res.json(review);
+  } catch (err) {
+    console.error("History/:id error:", err);
+    res.status(500).json({ error: "Could not fetch review" });
+  }
+});
+
+// ── Start ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
