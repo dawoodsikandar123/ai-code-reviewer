@@ -7,7 +7,6 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.post("/review", async (req, res) => {
@@ -19,21 +18,7 @@ app.post("/review", async (req, res) => {
     });
   }
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text: `You are an expert code reviewer.
+  const prompt = `You are an expert code reviewer.
 
 Review the following code for bugs, security vulnerabilities, performance problems, and code-quality issues.
 
@@ -64,32 +49,61 @@ Language:
 ${language}
 
 Code:
-${code}`
-                }
-              ]
+${code}`;
+
+  const callGemini = async () => {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }]
             }
           ],
           generationConfig: {
-            responseMimeType: "application/json"
+            responseMimeType: "application/json",
+            thinkingConfig: {
+              thinkingBudget: 0
+            }
           }
         })
       }
     );
-
     const rawText = await response.text();
+    return { status: response.status, ok: response.ok, rawText };
+  };
 
-    console.log("STATUS:", response.status);
-    console.log("BODY:", rawText.slice(0, 1000));
+  try {
+    let result = await callGemini();
 
-    if (!response.ok) {
+    let attempts = 1;
+    let delay = 1500;
+    while (!result.ok && result.status === 503 && attempts < 5) {
+      console.log(`Attempt ${attempts} failed with 503, retrying in ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
+      result = await callGemini();
+      attempts++;
+      delay *= 2;
+    }
+
+    console.log("STATUS:", result.status);
+    console.log("BODY:", result.rawText.slice(0, 2000));
+
+    if (!result.ok) {
       return res.status(500).json({
         error: "AI request failed",
-        status: response.status,
-        details: rawText.slice(0, 500)
+        status: result.status,
+        details: result.rawText.slice(0, 500)
       });
     }
 
-    const data = JSON.parse(rawText);
+    const data = JSON.parse(result.rawText);
 
     const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 

@@ -6,6 +6,7 @@ const reviewBtn = document.getElementById("reviewBtn");
 const languageSelect = document.getElementById("language");
 const resultBadge = document.querySelector(".result-badge");
 const emptyResult = document.querySelector(".empty-result");
+const summaryCards = document.querySelectorAll(".summary-card .summary-number");
 
 codeInput.addEventListener("input", () => {
   charCount.textContent = `${codeInput.value.length} characters`;
@@ -28,6 +29,48 @@ fileInput.addEventListener("change", async () => {
     }
   }
 });
+
+const severityColors = {
+  bug: "#ff6b6b",
+  security: "#ff9f43",
+  performance: "#62d9ff",
+  quality: "#8e8eff"
+};
+
+function renderResults(data) {
+  const issues = data.issues || [];
+
+  const counts = { bug: 0, security: 0, performance: 0, quality: 0 };
+  issues.forEach(issue => {
+    if (counts[issue.severity] !== undefined) counts[issue.severity]++;
+  });
+
+  summaryCards[0].textContent = issues.length;
+  summaryCards[1].textContent = counts.security;
+  summaryCards[2].textContent = counts.performance;
+  summaryCards[3].textContent = counts.quality;
+
+  if (issues.length === 0) {
+    emptyResult.innerHTML = `
+      <h3>No issues found</h3>
+      <p>The AI didn't find any problems in this code.</p>
+    `;
+    return;
+  }
+
+  emptyResult.innerHTML = issues.map(issue => `
+    <div style="text-align:left; border:1px solid #252d38; border-radius:10px; padding:16px; margin-bottom:12px; background:#0b0f14;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="color:${severityColors[issue.severity] || '#9fa9b7'}; font-weight:700; text-transform:uppercase; font-size:12px;">
+          ${issue.severity}
+        </span>
+        <span style="color:#9fa9b7; font-size:12px;">Line ${issue.line}</span>
+      </div>
+      <p style="color:#eaf0f6; margin-bottom:8px;">${issue.message}</p>
+      <p style="color:#9fa9b7; font-size:13px;"><strong style="color:#62d9ff;">Fix:</strong> ${issue.suggestion}</p>
+    </div>
+  `).join("");
+}
 
 reviewBtn.addEventListener("click", async () => {
   const code = codeInput.value.trim();
@@ -56,10 +99,7 @@ reviewBtn.addEventListener("click", async () => {
     }
 
     resultBadge.textContent = "Review complete";
-    emptyResult.innerHTML = `
-      <h3>Backend Response</h3>
-      <pre style="text-align:left; white-space:pre-wrap; color:#c7d0db; margin-top:12px;">${JSON.stringify(data, null, 2)}</pre>
-    `;
+    renderResults(data);
   } catch (err) {
     resultBadge.textContent = "Error";
     emptyResult.innerHTML = `<h3>Something went wrong</h3><p>${err.message}</p>`;
