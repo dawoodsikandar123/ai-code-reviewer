@@ -10,6 +10,39 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../frontend")));
 
+const SUPPORTED_LANGUAGES = new Set(["javascript", "typescript", "python", "java", "c", "cpp"]);
+
+/**
+ * Heuristic: does this string look like source code rather than plain text?
+ * Returns false only when confident the input is NOT code (short prose / greetings).
+ * Errs on the side of allowing ambiguous input through.
+ */
+function looksLikeCode(text) {
+  const t = text.trim();
+
+  // Very short inputs with no code tokens are almost certainly not code
+  if (t.length < 10) return false;
+
+  // Obvious single-word or greeting phrases
+  const plainPhrases = /^(hi|hello|hey|test|testing|yo|ok|okay|yes|no|help|thanks|bye|lol|wtf|what|why|how|who|hmm+|hm+|ugh+|oh+|ah+|um+|uh+|sup|yo+)\s*[!?.]*$/i;
+  if (plainPhrases.test(t)) return false;
+
+  // If it contains any recognisable code tokens -> allow
+  const codeTokens = /[{}\[\]();=><+\-*\/%!&|^~]|\/\/|\/\*|\*\/|=>|->|::|#include|#define|import\s|export\s|function\s|const\s|let\s|var\s|def\s|class\s|public\s|private\s|return\s|if\s*\(|for\s*\(|while\s*\(|int\s|void\s|String\s/;
+  if (codeTokens.test(t)) return true;
+
+  // Multiple lines -> likely code or at least structured content, allow it
+  if (t.split('\n').length > 2) return true;
+
+  // Single line with no code tokens and length < 60 -> likely plain text
+  if (t.split('\n').length === 1 && t.length < 60) return false;
+
+  return true;
+}
+
+
+
+
 // ── POST /review ──────────────────────────────────────────────────────
 app.post("/review", async (req, res) => {
   const { code, language } = req.body;
@@ -19,6 +52,20 @@ app.post("/review", async (req, res) => {
       error: "Code and language are required"
     });
   }
+
+  if (!SUPPORTED_LANGUAGES.has(language)) {
+    return res.status(400).json({
+      error: "Unsupported language. Please use JavaScript, TypeScript, Python, Java, C, or C++."
+    });
+  }
+
+  if (!looksLikeCode(code)) {
+    return res.status(400).json({
+      error: "Please enter valid code for the selected language."
+    });
+  }
+
+
 
   const prompt = `You are an expert code reviewer.
 
