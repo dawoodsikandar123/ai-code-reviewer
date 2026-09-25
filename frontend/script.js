@@ -12,6 +12,26 @@ codeInput.addEventListener("input", () => {
   charCount.textContent = `${codeInput.value.length} characters`;
 });
 
+const extensionToLanguage = {
+  js: "javascript",
+  jsx: "javascript",
+  ts: "typescript",
+  tsx: "typescript",
+  py: "python",
+  java: "java",
+  c: "c",
+  h: "c",
+  cpp: "cpp",
+  cc: "cpp",
+  cxx: "cpp",
+  hpp: "cpp"
+};
+
+function detectLanguageFromFilename(name) {
+  const ext = name.split(".").pop().toLowerCase();
+  return extensionToLanguage[ext] || null;
+}
+
 fileInput.addEventListener("change", async () => {
   fileList.innerHTML = "";
   const files = Array.from(fileInput.files);
@@ -26,6 +46,11 @@ fileInput.addEventListener("change", async () => {
       const text = await file.text();
       codeInput.value = text;
       charCount.textContent = `${text.length} characters`;
+
+      const detected = detectLanguageFromFilename(file.name);
+      if (detected) {
+        languageSelect.value = detected;
+      }
     }
   }
 });
