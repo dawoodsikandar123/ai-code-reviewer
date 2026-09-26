@@ -2,130 +2,94 @@
 
 **Project Type: Hackathon Project**
 
-## Overview
+## Design Overview
 
-AI Code Reviewer uses a simple and clean interface focused on making code review easy to understand.
+AI Code Reviewer has a simple and clean interface made for code review.
 
-The application uses a dark theme by default and also provides a light theme. The layout is designed to work well on desktop and smaller screens without making the interface too complicated.
+The design keeps the important information easy to find without making the application feel crowded.
 
-## Page Layout
+## Main Layout
 
-The application has three main areas:
+The application is divided into:
 
-1. Navbar
-2. Code Review Section
-3. Review History Section
-
-A small footer is shown at the bottom of the page.
+- Navbar
+- Code Review section
+- Review Results section
+- Review History section
+- Footer
 
 ## Navbar
 
-The navbar contains:
+The navbar includes:
 
-- AI Code Reviewer logo and name
+- AI Code Reviewer logo
 - Live local date and time
 - Dark / Light theme button
-- Application status
-
-The clock stays centered in the navbar and shows the user's local time and timezone.
+- Ready status
 
 ## Code Review Section
 
-The main review area contains:
+The main input area includes:
 
 - Language selector
-- File upload option
 - Code editor
+- File upload
 - Character count
 - Review Code button
 - Validation messages
 
-The editor is the main input area where users paste or upload their code.
+The editor is kept as the main focus of the page so users can quickly submit their code.
 
-The interface keeps the review button easy to find and gives feedback when the input is invalid or the review is being processed.
+## Review Results
 
-## Results Section
-
-After a successful review, the results section shows:
+After a review, the results section displays:
 
 - Code Health score
-- Total issues
-- Security issues
-- Performance issues
-- Quality issues
+- Issue summary
 - AI Summary
 - Time Complexity
 - Space Complexity
 - Optimization Suggestion
 - Individual issue cards
+- Issue filters
+- Copy Report option
 
-Issues can be filtered by:
-
-- All
-- Bug
-- Security
-- Performance
-- Quality
-
-The results also include a Copy Report option.
+The results are organized so users can quickly understand the overall review and then look at individual issues.
 
 ## Review History
 
-The History section shows previously saved reviews.
+The History section shows previous reviews in a compact format.
 
-Each history item includes useful information such as:
+Users can:
 
-- Programming language
-- Date and time
-- Issue counts
-- Time complexity
-- Space complexity
-- Score
+- Search previous reviews
+- Open a previous review
+- View more saved reviews
+- Refresh the history
 
-Users can search their history, open previous reviews and use View More / Show Less to see additional reviews.
+Each history item shows useful information such as language, score, issue counts and complexity.
 
-A refresh button is also available to reload the history.
+## Theme
 
-## Themes
+### Dark Mode
 
-### Dark Theme
+Dark mode is the default theme.
 
-Dark mode is the default theme of the application.
+It uses a dark interface with lighter text and accent colors for important elements.
 
-It uses a dark background with lighter text and a cyan accent for important controls and information.
+### Light Mode
 
-### Light Theme
+Users can switch to Light Mode from the navbar.
 
-Users can switch to a light theme from the navbar.
+The interface remains readable and consistent across both themes.
 
-The light theme changes the background, cards, text, inputs and other interface elements so the application remains easy to read.
+## Feedback
 
-The selected theme is saved and restored when the user opens the application again.
+The application provides clear feedback during user actions.
 
-## Feedback and Loading States
-
-The application gives visual feedback during important actions.
-
-### Loading
-
-A loading skeleton is shown while the AI review is being processed.
-
-The Review Code button is disabled during the request to prevent duplicate submissions.
-
-### Toast Notifications
-
-Small toast messages are used for actions such as:
-
-- Review saved
-- Report copied
-- Review failed
-- Unsupported file type
-
-### Validation Messages
-
-Invalid input is shown with an inline message below the Review Code button.
-
-This keeps errors visible without using browser alert popups.
+- A loading state is shown while a review is being processed.
+- Toast messages are used for important actions.
+- Validation messages are shown when the submitted input is not valid.
 
 ## Visual Style
 
@@ -134,33 +98,21 @@ The design uses:
 - Clean cards
 - Rounded controls
 - Simple spacing
-- Cyan and blue accents
+- Accent colors for important information
 - Subtle hover effects
 - Light animations
 
-The interface is designed to feel like a small developer tool rather than a large marketing website.
+The overall style is intended to feel like a simple developer tool rather than a large marketing website.
 
 ## Responsive Design
 
-The layout adapts to smaller screen sizes.
+The layout adjusts for smaller screens.
 
-On smaller screens:
+On mobile devices:
 
-- Navbar content is rearranged
+- Navigation content is rearranged
 - Review controls stack vertically
-- Summary cards use fewer columns
-- History information adjusts to fit the screen
-- The main content uses more available width
+- Summary information uses fewer columns
+- History items adjust to fit the available space
 
-The goal is to keep the application usable on both desktop and mobile screens.
-
-## Design Principles
-
-The main design goals are:
-
-- Keep the interface simple
-- Make important information easy to find
-- Avoid unnecessary visual elements
-- Give clear feedback after user actions
-- Keep the application consistent in both themes
-- Use animations only where they improve the experience
+The goal is to keep the application simple and usable across different screen sizes.
