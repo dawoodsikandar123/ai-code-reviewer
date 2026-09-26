@@ -1,131 +1,128 @@
-# Product Requirements Document — AI Code Reviewer
+# PRD
 
-> Hackathon Project
+## AI Code Reviewer
 
----
+**Project Type: Hackathon Project**
+
+## Project Overview
+
+AI Code Reviewer is a simple web application that helps users review their code with the help of Google Gemini.
+
+Users can paste their code or upload a code file. They can then select the programming language and get a review of their code.
+
+**The project was built as a beginner level hackathon project with the goal of making basic code review simple and easy to use.**
 
 ## Problem
 
-Manual code review is time-consuming and inconsistent. Developers reviewing their own code under deadline pressure miss bugs, security issues, and performance problems. There is no lightweight, zero-setup tool that provides immediate, structured, AI-generated feedback on code snippets.
+Finding problems in code can take time. Beginners can also find it difficult to understand bugs or performance problems on their own.
 
----
+This project helps by giving quick feedback about the code and explaining the problems that may need attention.
 
 ## Goal
 
-Provide a web-based tool that accepts code input, sends it to an AI model, and returns structured, actionable feedback with a quality score — all without requiring a local AI installation or IDE plugin.
+The main goal is to create a simple tool that can review code and give useful feedback in one place.
 
----
-
-## Target Users
-
-- Individual developers wanting quick feedback before committing code
-- Hackathon participants building and reviewing code rapidly
-- Students learning to write better code with explanations
-
----
+The user should be able to submit code and quickly see what may need to be fixed or improved.
 
 ## Supported Languages
 
-| Language   | Identifier used internally |
-|------------|---------------------------|
-| JavaScript | `javascript`              |
-| TypeScript | `typescript`              |
-| Python     | `python`                  |
-| Java       | `java`                    |
-| C          | `c`                       |
-| C++        | `cpp`                     |
+The application currently supports:
 
----
+1. JavaScript
+2. TypeScript
+3. Python
+4. Java
+5. C
+6. C++
 
-## Implemented Product Requirements
+Other languages are not supported at the moment.
 
-### PR-01 — Code Submission
+## Main Features
 
-- User pastes code into a textarea or uploads a source file.
-- Language is selected via a dropdown (JavaScript, TypeScript, Python, Java, C, C++).
-- When a single file is uploaded, its content is loaded into the textarea and the language dropdown is set automatically based on file extension.
-- Uploading multiple files shows each filename as a badge; content is not merged.
-- A live character count is displayed below the editor header.
+1. Users can paste code into the editor.
 
-### PR-02 — Input Validation (Client and Server)
+2. Users can upload supported code files.
 
-Both the browser and the server independently enforce:
+3. The application can detect the language from a supported file.
 
-| Check | Description |
-|-------|-------------|
-| Empty input | Rejected if no code is present |
-| Unsupported language | Rejected if language is not in the supported set |
-| Non-code input | Rejected when the text does not contain recognisable code tokens and is short plain prose |
-| Language mismatch | Rejected when the code clearly signals a different language than the selected one |
+4. Invalid input and unsupported files are rejected before the AI review.
 
-Validation errors are displayed as an inline message below the submit button. The same checks on the server return HTTP 400 with an error description.
+5. The application checks if the selected language matches the submitted code.
 
-### PR-03 — AI Review
+6. Google Gemini reviews valid code.
 
-- Code and language are sent to the Gemini API (`gemini-flash-lite-latest`) via a `POST /review` request.
-- The AI returns a structured JSON response containing:
-  - `summary` — 1–2 sentence overall quality description
-  - `issues[]` — list of issues, each with: `line`, `severity`, `message`, `suggestion`
-  - `time_complexity` — Big-O notation string
-  - `space_complexity` — Big-O notation string
-  - `optimization_suggestion` — brief text suggestion
-- Allowed severity values: `bug`, `security`, `performance`, `quality`
-- The server retries up to 5 times with exponential back-off (starting at 1 500 ms) on HTTP 503 responses from Gemini.
+7. The review can find bugs, security problems, performance problems and code quality issues.
 
-### PR-04 — Code Health Score
+8. The application gives a Code Health score.
 
-- Calculated on the server (and mirrored on the client) using a weighted penalty:
-  - Bug: −15 per issue
-  - Security: −20 per issue
-  - Performance: −10 per issue
-  - Quality: −5 per issue
-- Score = `max(0, 100 − total penalty)`
-- Score is stored with the review in the database.
+9. The review includes Time Complexity and Space Complexity.
 
-### PR-05 — Results Display
+10. The application gives an optimization suggestion.
 
-- **Score ring** — animated SVG circle that fills proportionally to the score; color changes: green (≥ 80), yellow (≥ 50), red (< 50)
-- **Summary cards** — four cards showing total issues, security count, performance count, quality count
-- **AI Summary card** — plain-text paragraph from the AI, shown with a left accent border
-- **Complexity card** — time complexity, space complexity, and optional optimization text
-- **Issue cards** — each card shows severity (color-coded), line number, message, and fix suggestion
-- **Issue filter bar** — buttons (All / Bug / Security / Performance / Quality) that filter the visible issue cards without re-fetching
+11. The AI provides a short summary of the review.
 
-### PR-06 — Copy Report
+12. Users can filter issues by type.
 
-- A **Copy Report** button appears after a successful review.
-- Clicking it builds a plain-text report (score, counts, complexity, summary, all issues) and copies it to the clipboard using the Clipboard API.
-- A toast notification confirms success or failure.
+13. Users can copy the review report.
 
-### PR-07 — Review History
+14. Reviews are saved in SQLite.
 
-- Every completed review is saved to a local SQLite database (server-side).
-- The history section loads on page start and refreshes automatically after each successful review.
-- History items are displayed newest-first, 5 per page.
-- Additional items are accessible via a **View More** / **Show Less** toggle with animated expand/collapse.
-- A real-time search field filters the visible history by language, score, date, time complexity, or space complexity (client-side, no additional server requests).
-- Clicking a history row fetches the full review (including issues) via `GET /history/:id` and renders it in the results section, scrolling the view to the top of the results.
-- A refresh button manually reloads the history list.
+15. Users can view and search previous reviews.
 
-### PR-08 — Dark / Light Theme
+16. Users can load an old review again.
 
-- Default theme is dark (background `#0b0f14`).
-- A toggle button in the navbar switches between dark and light themes.
-- The selected theme is persisted in `localStorage` and restored on page load.
+17. Users can use Dark or Light mode.
 
-### PR-09 — Live Clock
+18. The application shows the user's local date and time.
 
-- The navbar center displays a real-time clock: `HH:MM:SS`, full date, and browser timezone.
-- Updates every second via `setInterval`.
+19. Loading states and toast messages provide feedback during different actions.
 
-### PR-10 — Toast Notifications
+## Target Users
 
-- A fixed bottom-right container shows slide-in toasts.
-- Three types: `success` (green left border), `error` (red left border), `info` (cyan left border).
-- Toasts auto-dismiss after 3 500 ms with a fade/slide-out transition.
+The project is mainly aimed at:
 
-### PR-11 — Responsive Layout
+1. Students learning programming
 
-- At ≤ 800 px: hero heading shrinks, toolbar and results header stack vertically, summary grid becomes 2 columns, history items stack score below meta.
-- At ≤ 500 px: container widens to 94 %, summary grid becomes 1 column.
-- Navbar reflows at ≤ 900 px: clock moves below the logo/actions row.
+2. Beginner developers
+
+3. Developers who want quick feedback on their code
+
+## How It Works
+
+The basic flow of the application is:
+
+1. The user enters or uploads code.
+
+2. The user selects a supported language.
+
+3. The application validates the input.
+
+4. Valid code is sent to Google Gemini.
+
+5. Gemini returns the review information.
+
+6. The application displays the results.
+
+7. The review is saved in the local database.
+
+8. The user can open the review again from History.
+
+## Expected Result
+
+The application should give users a quick and simple way to understand possible problems in their code.
+
+It should also help users understand the complexity of their code and give suggestions that may help improve it.
+
+## Project Scope
+
+This is a small hackathon project focused on basic AI powered code review.
+
+It is not intended to replace a full IDE or professional static analysis tool.
+
+The current version focuses on the six supported languages and the features included in the application.
+
+## Future Ideas
+
+Some features could be added later such as better code fixing and more advanced analysis.
+
+These are not part of the current version of the project.
