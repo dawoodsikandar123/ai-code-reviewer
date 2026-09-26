@@ -19,6 +19,27 @@ const SUPPORTED_EXTENSIONS = new Set([
   "js", "jsx", "ts", "tsx", "py", "java", "c", "h", "cpp", "cc", "cxx", "hpp"
 ]);
 
+/** Mirror of the backend mismatch heuristic — keep in sync with server.js detectMismatch() */
+function detectMismatch(code, language) {
+  const t = code;
+  const signatures = {
+    python:     /^\s*(def |import |from .+ import|print\(|elif |#!.*python)/m,
+    java:       /^\s*(public\s+class |import\s+java\.|System\.out\.print|@Override)/m,
+    c:          /^\s*(#include\s*<|int\s+main\s*\(|printf\s*\(|scanf\s*\()/m,
+    cpp:        /^\s*(#include\s*<|std::|cout\s*<<|cin\s*>>|namespace\s+std)/m,
+    javascript: /^\s*(const |let |var |function |console\.(log|error)|require\s*\(|=>\s*{)/m,
+    typescript: /:\s*(string|number|boolean|any|void|never)\b|interface\s+\w+\s*{|<\w+>/m,
+  };
+  const matched = Object.entries(signatures).filter(([, rx]) => rx.test(t)).map(([lang]) => lang);
+  if (matched.length === 0) return false;
+  if (matched.includes(language)) return false;
+  const cFamily = new Set(["c", "cpp"]);
+  if (cFamily.has(language) && matched.every(m => cFamily.has(m))) return false;
+  const jsFamily = new Set(["javascript", "typescript"]);
+  if (jsFamily.has(language) && matched.every(m => jsFamily.has(m))) return false;
+  return true;
+}
+
 /** Mirror of the backend heuristic — keep in sync with server.js looksLikeCode() */
 function looksLikeCode(text) {
   const t = text.trim();
@@ -76,10 +97,11 @@ fileInput.addEventListener("change", async () => {
   for (const file of files) {
     const ext = file.name.split(".").pop().toLowerCase();
     if (!SUPPORTED_EXTENSIONS.has(ext)) {
+      showToast("Unsupported file type. Please upload a JavaScript, TypeScript, Python, Java, C, or C++ source file.", "error");
       showValidationMsg(
         "Unsupported file type. Please upload a JavaScript, TypeScript, Python, Java, C, or C++ source file."
       );
-      fileInput.value = "";   // reset so the same bad file can't slip through
+      fileInput.value = "";
       return;
     }
   }
@@ -148,7 +170,59 @@ function animateScore(score) {
   animateNumber(scoreNumber, 0, score, 1400);
 }
 
+const complexityCard       = document.getElementById("complexityCard");
+const timeComplexityEl     = document.getElementById("timeComplexity");
+const spaceComplexityEl    = document.getElementById("spaceComplexity");
+const optimizationEl       = document.getElementById("optimizationSuggestion");
+const aiSummaryCard        = document.getElementById("aiSummaryCard");
+const aiSummaryText        = document.getElementById("aiSummaryText");
+const issueFiltersEl       = document.getElementById("issueFilters");
+const copyReportBtn        = document.getElementById("copyReportBtn");
+const reviewSkeleton       = document.getElementById("reviewSkeleton");
+
+// Holds the last full review data for copy-report and re-filtering
+let currentReviewData = null;
+let activeFilter = "all";
+
+function renderComplexity(data) {
+  const tc  = data.time_complexity        || "";
+  const sc  = data.space_complexity       || "";
+  const opt = data.optimization_suggestion || "";
+  if (!tc && !sc) { complexityCard.hidden = true; return; }
+  timeComplexityEl.textContent  = tc  || "N/A";
+  spaceComplexityEl.textContent = sc  || "N/A";
+  optimizationEl.textContent    = opt ? `Optimization: ${opt}` : "";
+  complexityCard.hidden = false;
+}
+
+function renderIssueCards(issues, filter) {
+  const filtered = filter === "all" ? issues : issues.filter(i => i.severity === filter);
+  if (filtered.length === 0 && issues.length > 0) {
+    emptyResult.innerHTML = `<h3>No ${filter} issues</h3><p>No issues of this type were found.</p>`;
+    return;
+  }
+  if (filtered.length === 0) {
+    emptyResult.innerHTML = `<h3>No issues found</h3><p>The AI didn't find any problems in this code.</p>`;
+    return;
+  }
+  emptyResult.innerHTML = filtered.map(issue => `
+    <div style="text-align:left; border:1px solid #252d38; border-radius:10px; padding:16px; margin-bottom:12px; background:#0b0f14;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="color:${severityColors[issue.severity] || '#9fa9b7'}; font-weight:700; text-transform:uppercase; font-size:12px;">
+          ${issue.severity}
+        </span>
+        <span style="color:#9fa9b7; font-size:12px;">Line ${issue.line}</span>
+      </div>
+      <p style="color:#eaf0f6; margin-bottom:8px;">${issue.message}</p>
+      <p style="color:#9fa9b7; font-size:13px;"><strong style="color:#62d9ff;">Fix:</strong> ${issue.suggestion}</p>
+    </div>
+  `).join("");
+}
+
 function renderResults(data) {
+  currentReviewData = data;
+  activeFilter = "all";
+
   const issues = data.issues || [];
 
   const counts = { bug: 0, security: 0, performance: 0, quality: 0 };
@@ -162,27 +236,28 @@ function renderResults(data) {
   summaryCards[3].textContent = counts.quality;
 
   animateScore(calculateScore(counts));
+  renderComplexity(data);
 
-  if (issues.length === 0) {
-    emptyResult.innerHTML = `
-      <h3>No issues found</h3>
-      <p>The AI didn't find any problems in this code.</p>
-    `;
-    return;
+  // AI Summary
+  const summaryTxt = data.summary || "";
+  if (summaryTxt) {
+    aiSummaryText.textContent = summaryTxt;
+    aiSummaryCard.hidden = false;
+  } else {
+    aiSummaryCard.hidden = true;
   }
 
-  emptyResult.innerHTML = issues.map(issue => `
-    <div style="text-align:left; border:1px solid #252d38; border-radius:10px; padding:16px; margin-bottom:12px; background:#0b0f14;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="color:${severityColors[issue.severity] || '#9fa9b7'}; font-weight:700; text-transform:uppercase; font-size:12px;">
-          ${issue.severity}
-        </span>
-        <span style="color:#9fa9b7; font-size:12px;">Line ${issue.line}</span>
-      </div>
-      <p style="color:#eaf0f6; margin-bottom:8px;">${issue.message}</p>
-      <p style="color:#9fa9b7; font-size:13px;"><strong style="color:#62d9ff;">Fix:</strong> ${issue.suggestion}</p>
-    </div>
-  `).join("");
+  // Filters — show only when there are issues
+  issueFiltersEl.hidden = (issues.length === 0);
+  // Reset active filter button
+  issueFiltersEl.querySelectorAll(".filter-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.filter === "all");
+  });
+
+  // Copy report button
+  copyReportBtn.hidden = false;
+
+  renderIssueCards(issues, "all");
 }
 
 reviewBtn.addEventListener("click", async () => {
@@ -206,11 +281,21 @@ reviewBtn.addEventListener("click", async () => {
     return;
   }
 
+  if (detectMismatch(code, language)) {
+    showValidationMsg("Language mismatch. Please select the correct language for your code.");
+    return;
+  }
+
   clearValidationMsg();
 
   reviewBtn.disabled = true;
   reviewBtn.textContent = "Reviewing...";
   resultBadge.textContent = "Running...";
+  reviewSkeleton.hidden = false;
+  copyReportBtn.hidden = true;
+  issueFiltersEl.hidden = true;
+  aiSummaryCard.hidden = true;
+  complexityCard.hidden = true;
 
   try {
     const res = await fetch("/review", {
@@ -226,10 +311,14 @@ reviewBtn.addEventListener("click", async () => {
     }
 
     resultBadge.textContent = "Review complete";
+    reviewSkeleton.hidden = true;
     renderResults(data);
+    showToast("Review saved successfully.", "success");
   } catch (err) {
     resultBadge.textContent = "Error";
+    reviewSkeleton.hidden = true;
     emptyResult.innerHTML = `<h3>Something went wrong</h3><p>${err.message}</p>`;
+    showToast(`Review failed: ${err.message}`, "error");
   } finally {
     reviewBtn.disabled = false;
     reviewBtn.textContent = "Review Code";
@@ -266,9 +355,16 @@ function setHistoryState(type, message) {
 /** Build one history row element */
 function buildHistoryItem(review) {
   const color = scoreColor(review.score);
+  const tc = review.time_complexity  || "";
+  const sc = review.space_complexity || "";
+  const complexityLine = (tc && tc !== "N/A") || (sc && sc !== "N/A")
+    ? `<span class="history-complexity">Time: ${tc || "N/A"} · Space: ${sc || "N/A"}</span>`
+    : "";
   const item = document.createElement("div");
   item.className = "history-item";
   item.dataset.id = review.id;
+  // Store searchable text on the element for client-side filtering
+  item.dataset.search = `${review.language} ${review.score} ${formatDate(review.created_at)} ${tc} ${sc}`.toLowerCase();
   item.innerHTML = `
     <div class="history-item-left">
       <div class="history-item-meta">
@@ -293,6 +389,7 @@ function buildHistoryItem(review) {
           ${review.quality} quality
         </span>
       </div>
+      ${complexityLine}
     </div>
     <div class="history-item-score">
       <span class="history-score-number" style="color:${color}">${review.score}</span>
@@ -302,10 +399,49 @@ function buildHistoryItem(review) {
 }
 
 const HISTORY_PAGE_SIZE = 5;
-const historyMoreRow = document.getElementById("historyMoreRow");
-const viewMoreBtn    = document.getElementById("viewMoreBtn");
-let historyOverflowEl = null; // holds the collapsible container
-let historyExpanded = false;
+const historyMoreRow  = document.getElementById("historyMoreRow");
+const viewMoreBtn     = document.getElementById("viewMoreBtn");
+const historySearchEl = document.getElementById("historySearch");
+let historyOverflowEl = null;
+let historyExpanded   = false;
+let allHistoryReviews = []; // cache for search filtering
+
+/** Render a (possibly filtered) list of reviews with View More / Show Less */
+function renderHistoryItems(reviews) {
+  historyList.innerHTML = "";
+  historyOverflowEl = null;
+  historyExpanded = false;
+  historyMoreRow.hidden = true;
+
+  if (reviews.length === 0) {
+    setHistoryState("empty", historySearchEl.value.trim()
+      ? "No reviews match your search."
+      : "Submit your first review to see it here.");
+    return;
+  }
+
+  const visible = reviews.slice(0, HISTORY_PAGE_SIZE);
+  const hidden  = reviews.slice(HISTORY_PAGE_SIZE);
+
+  visible.forEach((review, i) => {
+    const item = buildHistoryItem(review);
+    item.style.animationDelay = `${i * 0.05}s`;
+    historyList.appendChild(item);
+  });
+
+  if (hidden.length > 0) {
+    historyOverflowEl = document.createElement("div");
+    historyOverflowEl.className = "history-overflow";
+    hidden.forEach((review, i) => {
+      const item = buildHistoryItem(review);
+      item.style.animationDelay = `${i * 0.04}s`;
+      historyOverflowEl.appendChild(item);
+    });
+    historyList.appendChild(historyOverflowEl);
+    viewMoreBtn.textContent = `View More (${hidden.length})`;
+    historyMoreRow.hidden = false;
+  }
+}
 
 /** Fetch and render the history list with View More / Show Less */
 async function loadHistory() {
@@ -315,42 +451,8 @@ async function loadHistory() {
   try {
     const res = await fetch("/history");
     if (!res.ok) throw new Error(`Server error ${res.status}`);
-    const reviews = await res.json();
-
-    historyList.innerHTML = "";
-    historyOverflowEl = null;
-    historyExpanded = false;
-    historyMoreRow.hidden = true;
-
-    if (reviews.length === 0) {
-      setHistoryState("empty", "Submit your first review to see it here.");
-      return;
-    }
-
-    const visible = reviews.slice(0, HISTORY_PAGE_SIZE);
-    const hidden  = reviews.slice(HISTORY_PAGE_SIZE);
-
-    visible.forEach((review, i) => {
-      const item = buildHistoryItem(review);
-      item.style.animationDelay = `${i * 0.05}s`;
-      historyList.appendChild(item);
-    });
-
-    if (hidden.length > 0) {
-      // Build collapsed overflow container
-      historyOverflowEl = document.createElement("div");
-      historyOverflowEl.className = "history-overflow";
-
-      hidden.forEach((review, i) => {
-        const item = buildHistoryItem(review);
-        item.style.animationDelay = `${i * 0.04}s`;
-        historyOverflowEl.appendChild(item);
-      });
-
-      historyList.appendChild(historyOverflowEl);
-      viewMoreBtn.textContent = `View More (${hidden.length})`;
-      historyMoreRow.hidden = false;
-    }
+    allHistoryReviews = await res.json();
+    renderHistoryItems(allHistoryReviews);
   } catch (err) {
     setHistoryState("error", err.message);
   } finally {
@@ -365,6 +467,19 @@ viewMoreBtn.addEventListener("click", () => {
   viewMoreBtn.textContent = historyExpanded
     ? "Show Less"
     : `View More (${historyOverflowEl.children.length})`;
+});
+
+historySearchEl.addEventListener("input", () => {
+  const q = historySearchEl.value.trim().toLowerCase();
+  const filtered = q
+    ? allHistoryReviews.filter(r => {
+        const tc = (r.time_complexity  || "").toLowerCase();
+        const sc = (r.space_complexity || "").toLowerCase();
+        const text = `${r.language} ${r.score} ${formatDate(r.created_at)} ${tc} ${sc}`.toLowerCase();
+        return text.includes(q);
+      })
+    : allHistoryReviews;
+  renderHistoryItems(filtered);
 });
 
 /** Load a saved review by id and display it in the results section */
@@ -480,3 +595,80 @@ themeToggleBtn.addEventListener("click", () => {
 
 // Restore saved preference; default to dark
 applyTheme(localStorage.getItem("theme") || "dark");
+
+
+// ── Toast notifications ───────────────────────────────────────────────
+
+const toastContainer = document.getElementById("toastContainer");
+
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  toastContainer.appendChild(toast);
+
+  // Trigger entrance
+  requestAnimationFrame(() => toast.classList.add("toast-visible"));
+
+  // Auto-remove after 3.5s
+  setTimeout(() => {
+    toast.classList.remove("toast-visible");
+    toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+  }, 3500);
+}
+
+
+// ── Copy Report ───────────────────────────────────────────────────────
+
+copyReportBtn.addEventListener("click", () => {
+  if (!currentReviewData) return;
+  const d = currentReviewData;
+  const issues = d.issues || [];
+
+  const lines = [
+    "=== AI Code Review Report ===",
+    "",
+    `Score:             ${d.score ?? "—"}`,
+    `Total Issues:      ${issues.length}`,
+    `Security:          ${issues.filter(i => i.severity === "security").length}`,
+    `Performance:       ${issues.filter(i => i.severity === "performance").length}`,
+    `Quality:           ${issues.filter(i => i.severity === "quality").length}`,
+    `Time Complexity:   ${d.time_complexity  || "N/A"}`,
+    `Space Complexity:  ${d.space_complexity || "N/A"}`,
+  ];
+  if (d.optimization_suggestion) {
+    lines.push(`Optimization:      ${d.optimization_suggestion}`);
+  }
+  if (d.summary) {
+    lines.push("", `Summary: ${d.summary}`);
+  }
+  if (issues.length > 0) {
+    lines.push("", "=== Issues ===");
+    issues.forEach((issue, idx) => {
+      lines.push(
+        "",
+        `[${idx + 1}] ${issue.severity.toUpperCase()} — Line ${issue.line ?? "?"}`,
+        `    ${issue.message}`,
+        `    Fix: ${issue.suggestion}`
+      );
+    });
+  }
+
+  navigator.clipboard.writeText(lines.join("\n"))
+    .then(() => showToast("Report copied to clipboard.", "success"))
+    .catch(() => showToast("Could not copy — please copy manually.", "error"));
+});
+
+
+// ── Issue Filters ─────────────────────────────────────────────────────
+
+issueFiltersEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".filter-btn");
+  if (!btn || !currentReviewData) return;
+
+  activeFilter = btn.dataset.filter;
+  issueFiltersEl.querySelectorAll(".filter-btn").forEach(b =>
+    b.classList.toggle("active", b === btn)
+  );
+  renderIssueCards(currentReviewData.issues || [], activeFilter);
+});

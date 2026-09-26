@@ -95,7 +95,20 @@
           <h2>Review Results</h2>
         </div>
 
-        <span class="result-badge">No review yet</span>
+        <div class="results-header-actions">
+          <span class="result-badge">No review yet</span>
+          <button id="copyReportBtn" class="copy-report-btn" hidden>Copy Report</button>
+        </div>
+      </div>
+
+      <!-- Loading skeleton -->
+      <div id="reviewSkeleton" class="review-skeleton" hidden>
+        <div class="skeleton-ring"></div>
+        <div class="skeleton-lines">
+          <div class="skeleton-line w60"></div>
+          <div class="skeleton-line w40"></div>
+          <div class="skeleton-line w80"></div>
+        </div>
       </div>
 	
 
@@ -134,6 +147,34 @@
 
       </div>
 
+      <!-- AI Summary -->
+      <div id="aiSummaryCard" class="ai-summary-card" hidden>
+        <p id="aiSummaryText" class="ai-summary-text"></p>
+      </div>
+
+      <!-- Issue filters -->
+      <div id="issueFilters" class="issue-filters" hidden>
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="bug">Bug</button>
+        <button class="filter-btn" data-filter="security">Security</button>
+        <button class="filter-btn" data-filter="performance">Performance</button>
+        <button class="filter-btn" data-filter="quality">Quality</button>
+      </div>
+
+      <div id="complexityCard" class="complexity-card" hidden>
+        <div class="complexity-row">
+          <div class="complexity-item">
+            <span class="complexity-label">Time Complexity</span>
+            <span id="timeComplexity" class="complexity-value">—</span>
+          </div>
+          <div class="complexity-item">
+            <span class="complexity-label">Space Complexity</span>
+            <span id="spaceComplexity" class="complexity-value">—</span>
+          </div>
+        </div>
+        <div id="optimizationSuggestion" class="complexity-optimization"></div>
+      </div>
+
       <div class="empty-result">
         <div class="empty-icon">&lt;/&gt;</div>
         <h3>Your review will appear here</h3>
@@ -158,6 +199,10 @@
         <button id="refreshHistoryBtn" class="history-refresh-btn" title="Refresh history">&#8635;</button>
       </div>
 
+      <div class="history-search-row">
+        <input type="search" id="historySearch" class="history-search" placeholder="Search by language, score, date…" />
+      </div>
+
       <div id="historyList" class="history-list">
         <!-- populated by script.js -->
       </div>
@@ -172,6 +217,9 @@
   <footer>
     <p>AI Code Reviewer • Hackathon Project</p>
   </footer>
+
+  <!-- Toast notifications -->
+  <div id="toastContainer" class="toast-container"></div>
 
   <script src="script.js"></script>
 </body>

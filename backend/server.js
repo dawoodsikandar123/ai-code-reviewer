@@ -43,6 +43,45 @@ function looksLikeCode(text) {
 
 
 
+/**
+ * Language mismatch detection.
+ * Returns true when the code strongly signals a DIFFERENT language than selected.
+ * Only fires when we are highly confident — errs on the side of allowing through.
+ */
+function detectMismatch(code, language) {
+  const t = code;
+
+  const signatures = {
+    python:     /^\s*(def |import |from .+ import|print\(|elif |#!.*python)/m,
+    java:       /^\s*(public\s+class |import\s+java\.|System\.out\.print|@Override)/m,
+    c:          /^\s*(#include\s*<|int\s+main\s*\(|printf\s*\(|scanf\s*\()/m,
+    cpp:        /^\s*(#include\s*<|std::|cout\s*<<|cin\s*>>|namespace\s+std)/m,
+    javascript: /^\s*(const |let |var |function |console\.(log|error)|require\s*\(|=>\s*{)/m,
+    typescript: /:\s*(string|number|boolean|any|void|never)\b|interface\s+\w+\s*{|<\w+>/m,
+  };
+
+  // Build a list of languages whose signatures match
+  const matched = Object.entries(signatures)
+    .filter(([, rx]) => rx.test(t))
+    .map(([lang]) => lang);
+
+  if (matched.length === 0) return false; // ambiguous — allow through
+
+  // If selected language is in the matched set, no mismatch
+  if (matched.includes(language)) return false;
+
+  // C and C++ share many tokens — don't flag c vs cpp or vice-versa
+  const cFamily = new Set(["c", "cpp"]);
+  if (cFamily.has(language) && matched.every(m => cFamily.has(m))) return false;
+
+  // JS and TS are very similar — don't flag one vs the other
+  const jsFamily = new Set(["javascript", "typescript"]);
+  if (jsFamily.has(language) && matched.every(m => jsFamily.has(m))) return false;
+
+  return true;
+}
+
+
 // ── POST /review ──────────────────────────────────────────────────────
 app.post("/review", async (req, res) => {
   const { code, language } = req.body;
@@ -65,11 +104,17 @@ app.post("/review", async (req, res) => {
     });
   }
 
-
+  if (detectMismatch(code, language)) {
+    return res.status(400).json({
+      error: "Language mismatch. Please select the correct language for your code."
+    });
+  }
 
   const prompt = `You are an expert code reviewer.
 
 Review the following code for bugs, security vulnerabilities, performance problems, and code-quality issues.
+Also analyse the time and space complexity of the code.
+Write a 1-2 sentence plain-English summary of the overall code quality.
 
 Return ONLY valid JSON.
 Do not use markdown.
@@ -78,6 +123,7 @@ Do not add any explanation outside the JSON.
 Use exactly this format:
 
 {
+  "summary": "1-2 sentence plain-English summary of the overall code quality.",
   "issues": [
     {
       "line": 1,
@@ -85,7 +131,10 @@ Use exactly this format:
       "message": "Description of the issue",
       "suggestion": "How to fix it"
     }
-  ]
+  ],
+  "time_complexity": "O(n)",
+  "space_complexity": "O(1)",
+  "optimization_suggestion": "Brief suggestion for improving complexity"
 }
 
 Allowed severity values:
@@ -160,6 +209,10 @@ ${code}`;
 
     const parsed = JSON.parse(aiText);
     const issues = parsed.issues || [];
+    const timeComplexity  = parsed.time_complexity        || "N/A";
+    const spaceComplexity = parsed.space_complexity       || "N/A";
+    const optimizationSuggestion = parsed.optimization_suggestion || "";
+    const summary         = parsed.summary                || "";
 
     // Calculate counts and score (mirrors frontend logic)
     const counts = { bug: 0, security: 0, performance: 0, quality: 0 };
@@ -174,10 +227,10 @@ ${code}`;
     const score = Math.max(0, 100 - penalty);
 
     // Persist to SQLite
-    const reviewId = saveReview({ language, score, counts, issues });
+    const reviewId = saveReview({ language, score, counts, issues, timeComplexity, spaceComplexity, summary });
     console.log(`Review saved: id=${reviewId}, score=${score}, issues=${issues.length}`);
 
-    res.json({ ...parsed, id: reviewId, score });
+    res.json({ ...parsed, id: reviewId, score, time_complexity: timeComplexity, space_complexity: spaceComplexity, optimization_suggestion: optimizationSuggestion, summary });
 
   } catch (err) {
     console.error("Review error:", err);
