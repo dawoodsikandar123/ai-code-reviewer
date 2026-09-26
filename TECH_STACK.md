@@ -1,81 +1,108 @@
-# Tech Stack — AI Code Reviewer
+# Tech Stack - AI Code Reviewer
+
+**Hackathon Project**
 
 ---
 
 ## Runtime & Server
 
-| Technology | Version (from package.json) | Purpose |
-|------------|----------------------------|---------|
-| **Node.js** | 22+ required | Runtime; also provides the built-in `node:sqlite` module used for the database |
-| **Express** | `^5.2.1` | HTTP server, static file serving, JSON body parsing, REST routing |
-| **dotenv** | `^18.0.3` | Loads `GEMINI_API_KEY` from the `.env` file into `process.env` at startup |
+| Technology  | Version | Purpose                                                         |
+| ----------- | ------- | --------------------------------------------------------------- |
+| **Node.js** | 24      | Runs the backend and provides the built-in `node:sqlite` module |
+| **Express** | 5.2.1   | Handles the server, API routes and frontend files               |
+| **dotenv**  | 18.0.3  | Loads the Gemini API key from the `.env` file                   |
 
 ---
 
 ## Database
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **SQLite** (via `node:sqlite`) | Built-in to Node.js 22 | Persistent storage for all reviews and their issues; no external binary or npm package required |
+| Technology        | Purpose                                                                       |
+| ----------------- | ----------------------------------------------------------------------------- |
+| **SQLite**        | Stores review history, review scores, complexity information and issues       |
+| **`node:sqlite`** | Connects the Node.js backend to SQLite without using another database package |
 
-The `node:sqlite` module (`DatabaseSync`) is used with prepared statements and manual transaction control (`BEGIN` / `COMMIT` / `ROLLBACK`).
+The database contains two main tables:
+
+* `reviews` for saved review information
+* `issues` for issues linked to each review
 
 ---
 
-## AI / External API
+## AI
 
-| Technology | Purpose |
-|------------|---------|
-| **Google Gemini API** | AI code review — model `gemini-flash-lite-latest` via the `v1beta/models/…:generateContent` endpoint |
+| Technology            | Purpose                                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| **Google Gemini API** | Reviews the submitted code and returns issues, summary, complexity and optimization suggestions |
+| **Gemini Flash Lite** | Model used for the code review                                                                  |
 
-The server calls the Gemini REST API directly using the native `fetch` available in Node.js 22+. No SDK or additional package is used.
+The backend sends requests to Gemini using the built-in `fetch` available in Node.js. No Gemini SDK is used.
 
 ---
 
 ## Frontend
 
-| Technology | Purpose |
-|------------|---------|
-| **HTML5** | Single-page structure (`frontend/index.html`) — semantic elements, no framework |
-| **Vanilla CSS** | All styling (`frontend/style.css`) — dark/light themes, responsive layout, animations |
-| **Vanilla JavaScript** | All client-side logic (`frontend/script.js`) — DOM manipulation, fetch calls, validation heuristics, score calculation, history, clock, toast, theme |
+| Technology             | Purpose                                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| **HTML5**              | Builds the structure of the application                                                               |
+| **CSS3**               | Handles the styling, responsive layout, dark/light theme and animations                               |
+| **Vanilla JavaScript** | Handles code submission, validation, API requests, results, history, search, filters, theme and clock |
 
-No frontend framework, bundler, or transpiler is used. The browser loads `.html`, `.css`, and `.js` directly.
+The frontend does not use a separate framework such as React or Vue.
 
 ---
 
-## Browser APIs Used (frontend)
+## Browser Features
 
-| API | Used for |
-|-----|----------|
-| `fetch` | `POST /review`, `GET /history`, `GET /history/:id` |
-| `localStorage` | Persisting the selected dark/light theme across page loads |
-| `navigator.clipboard.writeText` | Copy Report button |
-| `requestAnimationFrame` | Score ring animation, number count-up animation |
-| `MutationObserver` | Watching `resultBadge` text to trigger history reload after review completes |
-| `setInterval` | Live clock update every 1 000 ms |
-| `Intl.DateTimeFormat` | Resolving browser timezone for clock display |
-| `Element.scrollIntoView` | Smooth scroll to results section after loading a history item |
+| Browser API               | Purpose                                         |
+| ------------------------- | ----------------------------------------------- |
+| **Fetch API**             | Communicates with the backend                   |
+| **localStorage**          | Saves the selected theme                        |
+| **Clipboard API**         | Copies the review report                        |
+| **Intl.DateTimeFormat**   | Detects the user's local timezone for the clock |
+| **setInterval**           | Updates the live clock                          |
+| **requestAnimationFrame** | Runs score and number animations                |
+
+---
+
+## API Routes
+
+| Route                  | Purpose                               |
+| ---------------------- | ------------------------------------- |
+| **POST `/review`**     | Validates and reviews submitted code  |
+| **GET `/history`**     | Returns saved reviews                 |
+| **GET `/history/:id`** | Returns the details of a saved review |
 
 ---
 
 ## Project Configuration
 
-| File | Purpose |
-|------|---------|
-| `package.json` | Project metadata, npm scripts placeholder, lists `express` and `dotenv` as dependencies; `"type": "commonjs"` |
-| `package-lock.json` | Locked dependency tree |
-| `.env` | Environment variable file (git-ignored); holds `GEMINI_API_KEY` |
-| `.gitignore` | Excludes `node_modules/`, `.env`, `*.db`, `*.db-shm`, `*.db-wal` |
+| File                | Purpose                                                    |
+| ------------------- | ---------------------------------------------------------- |
+| `package.json`      | Project information and dependencies                       |
+| `package-lock.json` | Locks installed dependency versions                        |
+| `.env`              | Stores the Gemini API key                                  |
+| `.gitignore`        | Keeps `.env`, database files and `node_modules` out of Git |
 
 ---
 
-## What Is Intentionally Absent
+## Development Tools
 
-- No TypeScript compilation step
-- No frontend bundler (Webpack, Vite, etc.)
-- No CSS framework (no Tailwind, Bootstrap, etc.)
-- No ORM (raw SQL via `node:sqlite` prepared statements)
-- No authentication or sessions
-- No external SQLite npm package (uses Node.js built-in)
-- No Gemini SDK (plain `fetch` to the REST endpoint)
+| Tool                       | Purpose                                           |
+| -------------------------- | ------------------------------------------------- |
+| **IBM Bob**                | AI-assisted development and code changes          |
+| **Anthropic Claude**       | AI assistance during development                  |
+| **OpenAI ChatGPT**         | AI assistance for development and problem solving |
+| **Google Antigravity IDE** | AI-assisted coding and project development        |
+| **Git**                    | Tracks project changes                            |
+| **GitHub**                 | Stores the project repository and source code     |
+
+
+---
+
+## Project Approach
+
+The project uses a simple frontend and backend structure.
+
+The frontend sends valid code to the Express server. The server validates the input, sends the request to Gemini, saves the review in SQLite and returns the result to the frontend.
+
+This keeps the Gemini API key on the server and allows users to access their previous reviews through the History section.
