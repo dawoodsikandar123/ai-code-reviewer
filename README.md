@@ -143,14 +143,6 @@ The app is served at **http://localhost:3000**
 9. Use the **search box** to find previous reviews.
 
 ---
-## Environment Variables
-
-| Name             | Required | Description           |
-| ---------------- | -------- | --------------------- |
-| `GEMINI_API_KEY` | Yes      | Google Gemini API key |
-
----
-
 ## Supported Languages
 
 | Language   | File Extensions               |
@@ -161,3 +153,10 @@ The app is served at **http://localhost:3000**
 | Java       | `.java`                       |
 | C          | `.c`, `.h`                    |
 | C++        | `.cpp`, `.cc`, `.cxx`, `.hpp` |
+
+---
+## Author
+
+**Dawood Sikandar**
+
+Developed for the **IBM Bob 2.0 Hackathon** on **lablab.ai**.
