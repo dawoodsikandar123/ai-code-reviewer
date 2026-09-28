@@ -1,6 +1,19 @@
 # AI Code Reviewer
 
-> A hackathon project: AI-powered code analysis tool using Google Gemini.
+> A hackathon project: AI powered code analysis tool using Google Gemini.
+
+---
+
+## Project Info
+
+| Field              | Details               |
+| ------------------ | --------------------- |
+| Developed by       | Dawood Sikandar       |
+| Hackathon          | IBM Bob 2.0 Hackathon |
+| Hackathon Platform | lablab.ai             |
+| Hackathon Date     | September 25–27, 2026 |
+| Project Type       | Hackathon Project     |
+| AI Technology      | Google Gemini API     |
 
 ---
 
@@ -14,43 +27,43 @@
 
 ## Implemented Features
 
-- **AI Code Review**: Sends code to Gemini and returns structured JSON feedback (bugs, security, performance, quality issues)
-  
-- **Code Health Score**: Computed from issue counts with a weighted penalty formula, displayed as an animated SVG ring (0–100)
+* **AI Code Review**: Sends code to Gemini and returns structured JSON feedback (bugs, security, performance, quality issues)
 
-- **Issue Severity Filters**: Filter results by: All, Bug, Security, Performance and Quality.
-  
-- **Complexity Analysis**: Displays time complexity, space complexity and an optimization suggestion returned by the AI.
+* **Code Health Score**: Computed from issue counts with a weighted penalty formula, displayed as an animated SVG ring (0–100)
 
-- **AI Summary**: A 1–2 sentence plain-English summary of overall code quality.
-  
-- **Copy Report**: Copies a plain-text formatted review report to clipboard.
+* **Issue Severity Filters**: Filter results by: All, Bug, Security, Performance and Quality.
 
-- **File Upload**: Upload one or multiple source file, single file upload auto fills the textarea and auto detects language from file extension.
-  
-- **Language Auto-detection**: Maps file extensions to language selection automatically.
+* **Complexity Analysis**: Displays time complexity, space complexity and an optimization suggestion returned by the AI.
 
-- **Client-side Validation**: Checks for empty input, unsupported languages, non code text and language mismatches before sending to the server.
-  
-- **Server-side Validation**: Same heuristic checks enforced on the backend (guards against bypassed client validation)
-  
-- **Review History**: All reviews are persisted to SQLite, displayed in a paginated list (5 per page) with View More / Show Less.
-  
-- **History Search**: Real time client side search/filter of history by language, score, date or complexity.
-  
-- **History Refresh**: Manual refresh button with a spinning animation.
-  
-- **Load a Past Review**: Click any history item to reload its full results in the review panel.
-  
-- **Dark / Light Theme**: Toggle button in the navbar; preference persisted in `localStorage`.
+* **AI Summary**: A 1–2 sentence plain-English summary of overall code quality.
 
-- **Live Clock**: Real time HH:MM:SS clock with date and timezone displayed in the navbar center.
-  
-- **Toast Notifications**: Bottom right slide in toasts for success, error and info states (auto-dismiss after 3.5 s)
-  
-- **Loading Skeleton**: Shown during AI request, replaces the results panel with an animated shimmer placeholder.
-  
-- **Retry on 503**: Server automatically retries Gemini requests up to 5 times with exponential back-off on HTTP 503
+* **Copy Report**: Copies a plain-text formatted review report to clipboard.
+
+* **File Upload**: Upload one or multiple source file, single file upload auto fills the textarea and auto detects language from file extension.
+
+* **Language Auto-detection**: Maps file extensions to language selection automatically.
+
+* **Client-side Validation**: Checks for empty input, unsupported languages, non code text and language mismatches before sending to the server.
+
+* **Server-side Validation**: Same heuristic checks enforced on the backend (guards against bypassed client validation)
+
+* **Review History**: All reviews are persisted to SQLite, displayed in a paginated list (5 per page) with View More / Show Less.
+
+* **History Search**: Real time client side search/filter of history by language, score, date or complexity.
+
+* **History Refresh**: Manual refresh button with a spinning animation.
+
+* **Load a Past Review**: Click any history item to reload its full results in the review panel.
+
+* **Dark / Light Theme**: Toggle button in the navbar; preference persisted in `localStorage`.
+
+* **Live Clock**: Real time HH:MM:SS clock with date and timezone displayed in the navbar center.
+
+* **Toast Notifications**: Bottom right slide in toasts for success, error and info states (auto-dismiss after 3.5 s)
+
+* **Loading Skeleton**: Shown during AI request, replaces the results panel with an animated shimmer placeholder.
+
+* **Retry on 503**: Server automatically retries Gemini requests up to 5 times with exponential back-off on HTTP 503
 
 ---
 
@@ -65,7 +78,7 @@ ai-code-reviewer/
 ├── frontend/
 │   ├── index.html      # Single-page HTML with all sections (hero, review card, results, history)
 │   ├── script.js       # All client-side logic (review flow, history, clock, theme, toasts, copy)
-│   └── style.css       # Dark/light theme styles, animations, responsive layout
+│   └── style.css      # Dark/light theme styles, animations, responsive layout
 ├── .env                # Environment variables (git-ignored)
 ├── .gitignore
 ├── package.json
@@ -78,7 +91,7 @@ ai-code-reviewer/
 
 ### Prerequisites
 
-- Node.js 22+ (uses the built-in `node:sqlite` module - no external SQLite dependency required)
+* Node.js 22+ (uses the built-in `node:sqlite` module - no external SQLite dependency required)
 
 ### 1. Install dependencies
 
@@ -117,11 +130,13 @@ The app is served at **http://localhost:3000**
 4. Click **Review Code**. A loading skeleton appears while the AI processes the request.
 
 5. Results appear with:
-   - An animated **Code Health score ring**
-   - Summary cards for **Total Issues / Security / Performance / Quality**
-   - An **AI Summary** paragraph
-   - A **Complexity card** (time, space, optimization suggestion)
-   - Individual **issue cards** with severity, line number, message and fix suggestion
+
+   * An animated **Code Health score ring**
+   * Summary cards for **Total Issues / Security / Performance / Quality**
+   * An **AI Summary** paragraph
+   * A **Complexity card** (time, space, optimization suggestion)
+   * Individual **issue cards** with severity, line number, message and fix suggestion
+
 6. Use the **filter buttons** (All / Bug / Security / Performance / Quality) to narrow issues.
 
 7. Click **Copy Report** to copy a plain-text version of the results to clipboard.
@@ -136,19 +151,19 @@ The app is served at **http://localhost:3000**
 
 ## Environment Variables
 
-| Name             | Required | Description                     |
-|------------------|----------|---------------------------------|
-| `GEMINI_API_KEY` | Yes      | Google Gemini API key           |
+| Name             | Required | Description           |
+| ---------------- | -------- | --------------------- |
+| `GEMINI_API_KEY` | Yes      | Google Gemini API key |
 
 ---
 
 ## Supported Languages
 
-| Language   | File Extensions             |
-|------------|-----------------------------|
-| JavaScript | `.js`, `.jsx`               |
-| TypeScript | `.ts`, `.tsx`               |
-| Python     | `.py`                       |
-| Java       | `.java`                     |
-| C          | `.c`, `.h`                  |
+| Language   | File Extensions               |
+| ---------- | ----------------------------- |
+| JavaScript | `.js`, `.jsx`                 |
+| TypeScript | `.ts`, `.tsx`                 |
+| Python     | `.py`                         |
+| Java       | `.java`                       |
+| C          | `.c`, `.h`                    |
 | C++        | `.cpp`, `.cc`, `.cxx`, `.hpp` |
