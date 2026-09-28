@@ -1,9 +1,22 @@
-# AI Code Reviewer
+# IBM Bob 2.0 Hackathon
 
 > A hackathon project: AI powered code analysis tool using Google Gemini.
 
 ---
+## My Participation in **IBM Bob 2.0 Hackathon**
 
+This repository contains my **AI Code Reviewer** project developed during the **IBM Bob 2.0 Hackathon** hosted on **lablab.ai**.
+
+🔗 **Official Hackathon Link:** https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon
+
+---
+## Event Overview
+
+* **Dates:** September 25-27, 2026
+* **Hosted on:** lablab.ai
+* **Project:** AI Code Reviewer - AI powered web application
+
+---
 ## Project Info
 
 | Field              | Details               |
@@ -16,6 +29,7 @@
 | AI Technology      | Google Gemini API     |
 
 ---
+## Certificate of Participation:
 
 ## Problem & Solution
 
