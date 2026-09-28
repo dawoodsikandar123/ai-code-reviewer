@@ -19,7 +19,6 @@ This repository contains my **AI Code Reviewer** project developed during the **
 
 * **Dates:** September 25-27, 2026
 * **Hosted on:** lablab.ai
-* **Project:** AI Code Reviewer - AI powered web app
 
 ---
 ## Project Info
@@ -50,43 +49,35 @@ This repository contains my **AI Code Reviewer** project developed during the **
 ---
 ## Implemented Features
 
-* **AI Code Review**: Sends code to Gemini and returns structured JSON feedback (bugs, security, performance, quality issues)
+### Code Review
 
-* **Code Health Score**: Computed from issue counts with a weighted penalty formula, displayed as an animated SVG ring (0–100)
+* **AI Code Review**: Reviews code using Gemini and finds bugs and security issues.
+* **Code Health Score**: Gives a score from 0–100 based on the issues found.
+* **AI Summary**: Gives a short summary of the code.
+* **Complexity Analysis**: Shows time complexity and space complexity with an optimization suggestion.
+* **Issue Filters**: Filter issues by Bug, Security, Performance and Quality.
 
-* **Issue Severity Filters**: Filter results by: All, Bug, Security, Performance and Quality.
+### Code Input
 
-* **Complexity Analysis**: Displays time complexity, space complexity and an optimization suggestion returned by the AI.
+* **File Upload**: Upload source files directly for review.
+* **Language Detection**: Detects the language from the file extension.
+* **Input Validation**: Checks the code on both client and server side.
+* **Copy Report**: Copies the review results as plain text.
 
-* **AI Summary**: A 1–2 sentence plain-English summary of overall code quality.
+### Review History
 
-* **Copy Report**: Copies a plain-text formatted review report to clipboard.
+* **Review History**: Saves previous reviews in SQLite.
+* **History Search**: Search reviews by language, score, date or complexity.
+* **Load Past Review**: Open previous reviews again.
+* **History Refresh**: Refresh the review history.
 
-* **File Upload**: Upload one or multiple source file, single file upload auto fills the textarea and auto detects language from file extension.
+### Interface
 
-* **Language Auto-detection**: Maps file extensions to language selection automatically.
-
-* **Client-side Validation**: Checks for empty input, unsupported languages, non code text and language mismatches before sending to the server.
-
-* **Server-side Validation**: Same heuristic checks enforced on the backend (guards against bypassed client validation)
-
-* **Review History**: All reviews are persisted to SQLite, displayed in a paginated list (5 per page) with View More / Show Less.
-
-* **History Search**: Real time client side search/filter of history by language, score, date or complexity.
-
-* **History Refresh**: Manual refresh button with a spinning animation.
-
-* **Load a Past Review**: Click any history item to reload its full results in the review panel.
-
-* **Dark / Light Theme**: Toggle button in the navbar; preference persisted in `localStorage`.
-
-* **Live Clock**: Real time HH:MM:SS clock with date and timezone displayed in the navbar center.
-
-* **Toast Notifications**: Bottom right slide in toasts for success, error and info states (auto-dismiss after 3.5 s)
-
-* **Loading Skeleton**: Shown during AI request, replaces the results panel with an animated shimmer placeholder.
-
-* **Retry on 503**: Server automatically retries Gemini requests up to 5 times with exponential back-off on HTTP 503
+* **Dark / Light Theme**: Switch between dark and light mode.
+* **Live Clock**: Shows the current time and date.
+* **Toast Notifications**: Shows success and error messages.
+* **Loading Skeleton**: Shows a loading animation during review.
+* **Retry on 503**: Retries the request when Gemini returns a temporary 503 error.
 
 ---
 ## Project Structure
@@ -139,37 +130,19 @@ node backend/server.js
 The app is served at **http://localhost:3000**
 
 ---
-
 ## How to Use
 
 1. Open **http://localhost:3000** in a browser.
-
-2. **Select a language** from the dropdown (JavaScript, TypeScript, Python, Java, C, C++).
-
-3. **Paste code** into the textarea, or click **Upload Files** to load a source file. Single file uploads auto fill the textarea and detect the language.
-
-4. Click **Review Code**. A loading skeleton appears while the AI processes the request.
-
-5. Results appear with:
-
-   * An animated **Code Health score ring**
-   * Summary cards for **Total Issues / Security / Performance / Quality**
-   * An **AI Summary** paragraph
-   * A **Complexity card** (time, space, optimization suggestion)
-   * Individual **issue cards** with severity, line number, message and fix suggestion
-
-6. Use the **filter buttons** (All / Bug / Security / Performance / Quality) to narrow issues.
-
-7. Click **Copy Report** to copy a plain-text version of the results to clipboard.
-
-8. Scroll down to **Review History** to see all past reviews. Click any row to reload it in the results panel.
-
-9. Use the **search box** in history to filter by language, score, date, or complexity.
-
-10. Toggle **Dark / Light** mode using the button in the top-right of the navbar.
+2. **Select a language** from the dropdown.
+3. **Paste code** or click **Upload Files** to upload a source file.
+4. Click **Review Code** to analyze the code.
+5. View the **Code Health Score**, AI summary, complexity analysis and detected issues.
+6. Use the **filters** to view specific issue types.
+7. Use **Copy Report** to copy the review results.
+8. Scroll down to **Review History** to view or reload previous reviews.
+9. Use the **search box** to find previous reviews.
 
 ---
-
 ## Environment Variables
 
 | Name             | Required | Description           |
