@@ -33,6 +33,11 @@ This repository contains my **AI Code Reviewer** project developed during the **
 | AI Technology      | Google Gemini API     |
 
 ---
+## 🎥 Video Demo
+
+🔗 [**Watch Project Demo**](https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon/reviewpilot/ai-code-reviewer)
+
+---
 ## Certificate of Participation
 
 ![IBM Bob 2.0 Hackathon Certificate](Screenshot.png)
