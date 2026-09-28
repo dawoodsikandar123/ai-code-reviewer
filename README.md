@@ -10,11 +10,16 @@ This repository contains my **AI Code Reviewer** project developed during the **
 🔗 **Official Hackathon Link:** https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon
 
 ---
+## Featured On LinkedIn
+
+📣 [**Check out the LinkedIn post here**](https://www.linkedin.com/feed/update/urn:li:activity:7509970540082921472/)
+
+---
 ## Event Overview
 
 * **Dates:** September 25-27, 2026
 * **Hosted on:** lablab.ai
-* **Project:** AI Code Reviewer - AI powered web application
+* **Project:** AI Code Reviewer - AI powered web app
 
 ---
 ## Project Info
@@ -29,8 +34,13 @@ This repository contains my **AI Code Reviewer** project developed during the **
 | AI Technology      | Google Gemini API     |
 
 ---
-## Certificate of Participation:
+## Certificate of Participation
 
+![IBM Bob 2.0 Hackathon Certificate](Screenshot.png)
+
+🔗 [**View Full Certificate (PDF)**](https://drive.google.com/file/d/1JH9xoFDJ9Gu2hHl951_DXKlsJMyf9Xaw/view?usp=sharing)
+
+---
 ## Problem & Solution
 
 **Problem:** Developers waste time manually reviewing code for bugs, security issues, performance problems and style violations especially under deadline pressure.
@@ -38,7 +48,6 @@ This repository contains my **AI Code Reviewer** project developed during the **
 **Solution:** Paste or upload code, select the language and receive instant structured feedback powered by the Gemini API, including a scored health report, per issue explanations, complexity analysis and a persistent review history.
 
 ---
-
 ## Implemented Features
 
 * **AI Code Review**: Sends code to Gemini and returns structured JSON feedback (bugs, security, performance, quality issues)
@@ -80,7 +89,6 @@ This repository contains my **AI Code Reviewer** project developed during the **
 * **Retry on 503**: Server automatically retries Gemini requests up to 5 times with exponential back-off on HTTP 503
 
 ---
-
 ## Project Structure
 
 ```
@@ -100,7 +108,6 @@ ai-code-reviewer/
 ```
 
 ---
-
 ## Setup & Run
 
 ### Prerequisites
