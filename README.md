@@ -9,6 +9,8 @@ This repository contains my **AI Code Reviewer** project developed during the **
 
 🔗 **Official Hackathon Link:** https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon
 
+🔗 **Hackathon Submission:** [View Submission](https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon/reviewpilot/ai-code-reviewer)
+
 ---
 ## Featured On LinkedIn
 
