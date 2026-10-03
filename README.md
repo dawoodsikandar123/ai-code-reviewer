@@ -105,63 +105,6 @@ ai-code-reviewer/
 └── package-lock.json
 ```
 
----
-## Setup & Run
-
-### Prerequisites
-
-* Node.js 22+ (uses the built-in `node:sqlite` module - no external SQLite dependency required)
-
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Create the environment file
-
-Create a `.env` file in the project root with the following variable:
-
-```
-GEMINI_API_KEY=your_key_here
-```
-
-> Only the variable **name** is listed above. Do not commit your actual key.
-
-### 3. Start the server
-
-```bash
-node backend/server.js
-```
-
-The app is served at **http://localhost:3000**
-
----
-## How to Use
-
-1. Open **http://localhost:3000** in a browser.
-2. **Select a language** from the dropdown.
-3. **Paste code** or click **Upload Files** to upload a source file.
-4. Click **Review Code** to analyze the code.
-5. View the **Code Health Score**, AI summary, complexity analysis and detected issues.
-6. Use the **filters** to view specific issue types.
-7. Use **Copy Report** to copy the review results.
-8. Scroll down to **Review History** to view or reload previous reviews.
-9. Use the **search box** to find previous reviews.
-
----
-## Supported Languages
-
-| Language   | File Extensions               |
-| ---------- | ----------------------------- |
-| JavaScript | `.js`, `.jsx`                 |
-| TypeScript | `.ts`, `.tsx`                 |
-| Python     | `.py`                         |
-| Java       | `.java`                       |
-| C          | `.c`, `.h`                    |
-| C++        | `.cpp`, `.cc`, `.cxx`, `.hpp` |
-
----
 ## Author
 
 **Dawood Sikandar**
